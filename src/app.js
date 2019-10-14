@@ -4,8 +4,14 @@ const morgan = require('morgan');
 const cors = require('cors');
 const helmet = require('helmet');
 const { NODE_ENV } = require('./config');
+const knex = require('knex');
+const portalRouter = require('./portal/portal-router');
 
 const app = express();
+const db = knex({
+  client: 'pg',
+  connection: process.env.DATABASE_URL
+});
 
 const morganOption = (NODE_ENV === 'production')
   ? 'tiny'
@@ -14,6 +20,7 @@ const morganOption = (NODE_ENV === 'production')
 app.use(morgan(morganOption));
 app.use(helmet());
 app.use(cors());
+app.set('db', db);
 
 app.get('/', (req, res) => {
   return res.json('Hello, world!'); 
@@ -30,5 +37,7 @@ app.use((error, req, res, next) => {
   }
   return res.status(500).json(response);
 });
+
+app.use('/api/portal', portalRouter);
 
 module.exports = app;
