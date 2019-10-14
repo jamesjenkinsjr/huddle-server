@@ -13,6 +13,11 @@ const PortalService = {
       .then(portal => {
         return PortalService.getPortalByID(db, portal.id);
       })
+  },
+  getMessagesForPortal: (db, portal_id) => {
+    return db('message')
+      .select('*')
+      .where({portal_id})
   }
 };
 
