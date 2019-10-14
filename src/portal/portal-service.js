@@ -5,9 +5,9 @@ const PortalService = {
       .where({id})
       .first()
   },
-  addPortal: (db) => {
+  addPortal: (db, data) => {
     return db('portal')
-      .insert({})
+      .insert(data)
       .returning('*')
       .then(portal => portal[0])
       .then(portal => {

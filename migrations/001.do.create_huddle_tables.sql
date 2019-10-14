@@ -3,7 +3,8 @@ DROP TABLE IF EXISTS portal;
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 CREATE TABLE portal (
-  id uuid PRIMARY KEY DEFAULT uuid_generate_v4()
+  id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),
+  name text NOT NULL
 );
 
 CREATE TABLE message (
