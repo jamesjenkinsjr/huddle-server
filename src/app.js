@@ -6,6 +6,7 @@ const helmet = require('helmet');
 const { NODE_ENV } = require('./config');
 const knex = require('knex');
 const portalRouter = require('./portal/portal-router');
+const messageRouter = require('./message/message-router');
 
 const app = express();
 const db = knex({
@@ -39,5 +40,6 @@ app.use((error, req, res, next) => {
 });
 
 app.use('/api/portal', portalRouter);
+app.use('/api/message', messageRouter);
 
 module.exports = app;

@@ -8,7 +8,7 @@ const validator = require('validator');
 portalRouter.route('/').post(express.json(), (req, res, next) => {
   const db = req.app.get('db');
   const { name } = req.body;
-  const newPortal = { name }
+  const newPortal = { name };
   if(!name) {
     return res.status(400).json({error: 'Portal name is required'});
   }
