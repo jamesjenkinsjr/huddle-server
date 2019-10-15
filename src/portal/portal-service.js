@@ -3,7 +3,7 @@ const PortalService = {
     return db('portal')
       .select('*')
       .where({id})
-      .first()
+      .first();
   },
   addPortal: (db, data) => {
     return db('portal')
@@ -12,12 +12,17 @@ const PortalService = {
       .then(portal => portal[0])
       .then(portal => {
         return PortalService.getPortalByID(db, portal.id);
-      })
+      });
   },
   getMessagesForPortal: (db, portal_id) => {
     return db('message')
       .select('*')
-      .where({portal_id})
+      .where({portal_id});
+  },
+  deletePortal: (db, id) => {
+    return db('portal')
+      .delete()
+      .where({id});
   }
 };
 

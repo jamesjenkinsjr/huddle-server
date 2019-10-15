@@ -40,7 +40,7 @@ portalRouter
     PortalService.getPortalByID(db, req.params.id)
       .then(portal => {
         if (!portal) {
-          return res.status(404).json({ error: 'Invalid portal id!' });
+          return res.status(400).json({ error: 'Invalid portal id!' });
         }
         res.portal = portal;
         next();
@@ -48,7 +48,17 @@ portalRouter
       .catch(next);
   })
   .get((req, res, next) => {
-    return res.json(res.portal);
+    const db = req.app.get('db');
+    const currentDatetime = new Date();
+    if(res.portal.expiry_timestamp < currentDatetime) {
+      PortalService.deletePortal(db, req.params.id)
+        .then(() => {
+          return res.status(400).json({ error: 'Invalid portal id!'});
+        })
+        .catch(next);
+    } else {
+      return res.json(res.portal);
+    }
   });
 
 portalRouter.route('/:id/messages').get((req, res, next) => {
