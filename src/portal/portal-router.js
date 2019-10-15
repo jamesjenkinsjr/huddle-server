@@ -7,10 +7,16 @@ const validator = require('validator');
 
 portalRouter.route('/').post(express.json(), (req, res, next) => {
   const db = req.app.get('db');
-  const { name } = req.body;
-  const newPortal = { name };
+  const { name, expiry_timestamp = null } = req.body;
+  const newPortal = { name, expiry_timestamp };
+  const currentDatetime = new Date();
+  const expiryToDatetime = new Date(expiry_timestamp);
   if(!name) {
     return res.status(400).json({error: 'Portal name is required'});
+  }
+
+  if(expiry_timestamp !== null && expiryToDatetime <= currentDatetime) {
+    return res.status(400).json({error: 'expiry_timestamp is invalid'});
   }
 
   PortalService.addPortal(db, newPortal)
