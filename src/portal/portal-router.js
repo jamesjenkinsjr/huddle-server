@@ -37,20 +37,24 @@ portalRouter
   .all((req, res, next) => {
     const db = req.app.get('db');
     const password = req.headers.password || '';
+
     if (!validator.isUUID(req.params.id)) {
       return res.status(404).json({ error: 'Invalid id' });
     }
 
     PortalService.getPortalByID(db, req.params.id)
       .then(portal => {
+        const publicPortal = {...portal};
+        delete publicPortal.password;
+
         if (!portal) {
           return res.status(400).json({ error: 'Invalid portal id!' });
         }
-
-        if(portal.use_password && portal.password !== password) {
-          return res.status(400).json({error: 'Invalid portal id'});
+        
+        if(portal.use_password && password !== portal.password) {
+          return res.status(400).json({error: 'Unauthorized portal request'});
         }
-        res.portal = portal;
+        res.portal = publicPortal;
         next();
       })
       .catch(next);
@@ -64,9 +68,9 @@ portalRouter
           return res.status(400).json({ error: 'Invalid portal id!'});
         })
         .catch(next);
-    } else {
-      return res.json(res.portal);
     }
+
+    return res.json(res.portal);
   });
 
 portalRouter.route('/:id/messages').get((req, res, next) => {
