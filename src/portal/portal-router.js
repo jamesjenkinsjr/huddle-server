@@ -52,7 +52,7 @@ portalRouter
         }
         
         if(portal.use_password && password !== portal.password) {
-          return res.status(400).json({error: 'Unauthorized portal request'});
+          return res.status(401).json({error: 'Unauthorized portal request'});
         }
         res.portal = publicPortal;
         next();
