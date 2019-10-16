@@ -2,6 +2,7 @@ const express = require('express');
 const PortalService = require('./portal-service');
 const portalRouter = express.Router();
 const path = require('path');
+const bcryptjs = require('bcryptjs');
 
 const validator = require('validator');
 
@@ -22,6 +23,9 @@ portalRouter.route('/').post(express.json(), (req, res, next) => {
   if(use_password && password.length === 0) {
     return res.status(400).json({error: 'Invalid password'});
   }
+
+  newPortal.password = bcryptjs.hashSync(password, 6)
+  
   PortalService.addPortal(db, newPortal)
     .then(portal => {
       return res
@@ -31,6 +35,34 @@ portalRouter.route('/').post(express.json(), (req, res, next) => {
     })
     .catch(next);
 });
+
+portalRouter
+  .route('/:id/auth')
+  .post(express.json(), (req, res, next) => {
+    const db = req.app.get('db');
+    const id = req.params.id;
+    const { password } = req.body;
+
+    if(!password) {
+      return res.status(400).json({error: 'Password is required'})
+    }
+    db('portal')
+      .select('*')
+      .where({ id })
+      .first()
+      .then(portal => {
+        if(!portal) {
+          return res.status(400).json({error: 'Invalid portal id'})
+        }
+        return PortalService.comparePasswordWithToken(password, portal.password)
+          .then(valid => {
+            if(!valid) {
+              return res.status(400).json({error: 'Invalid password'})
+            }
+            return res.status(200).json({portalAuth: PortalService.createJWT(portal.name, {id: portal.id})});
+          })
+      })
+  })
 
 portalRouter
   .route('/:id')
@@ -54,6 +86,7 @@ portalRouter
         if(portal.use_password && password !== portal.password) {
           return res.status(401).json({error: 'Unauthorized portal request'});
         }
+
         res.portal = publicPortal;
         next();
       })
@@ -74,6 +107,7 @@ portalRouter
   });
 
 portalRouter.route('/:id/messages').get((req, res, next) => {
+  // todo: need to gate this request with password/token
   const db = req.app.get('db');
 
   if (!validator.isUUID(req.params.id)) {
