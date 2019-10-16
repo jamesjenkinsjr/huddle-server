@@ -1,0 +1,3 @@
+ALTER TABLE portal
+  ADD COLUMN use_password BOOLEAN DEFAULT false,
+  ADD COLUMN password TEXT DEFAULT NULL;

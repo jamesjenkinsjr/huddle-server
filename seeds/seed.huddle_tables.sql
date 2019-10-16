@@ -3,10 +3,10 @@ BEGIN;
   portal
   RESTART IDENTITY CASCADE;
 
-  INSERT INTO portal (id, name, create_timestamp, expiry_timestamp)
-    VALUES ('fed4a91b-300f-4a62-bfe5-63b2bfcc3f98', 'My Portal', now() - INTERVAL '11 DAYS', NULL), 
-    ('bd0e943f-ad24-44f7-be27-10bdfba016c1', 'Fantasy Football', now() - INTERVAL '11 DAYS', NULL), 
-    ('6551b75b-4933-4f27-9293-198d9998b770', 'Vacation Plans', now() - INTERVAL '11 DAYS', NULL);
+  INSERT INTO portal (id, name, create_timestamp, expiry_timestamp, use_password, password)
+    VALUES ('fed4a91b-300f-4a62-bfe5-63b2bfcc3f98', 'My Portal', now() - INTERVAL '11 DAYS', NULL, false, NULL), 
+    ('bd0e943f-ad24-44f7-be27-10bdfba016c1', 'Fantasy Football', now() - INTERVAL '11 DAYS', NULL, false, NULL), 
+    ('6551b75b-4933-4f27-9293-198d9998b770', 'Vacation Plans', now() - INTERVAL '11 DAYS', NULL, true, 'password');
 
   INSERT INTO message (content, author, create_timestamp, portal_id)
     VALUES 

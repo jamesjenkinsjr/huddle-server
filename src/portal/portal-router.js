@@ -7,8 +7,8 @@ const validator = require('validator');
 
 portalRouter.route('/').post(express.json(), (req, res, next) => {
   const db = req.app.get('db');
-  const { name, expiry_timestamp = null } = req.body;
-  const newPortal = { name, expiry_timestamp };
+  const { name, expiry_timestamp = null, use_password = false, password = null } = req.body;
+  const newPortal = { name, expiry_timestamp, use_password, password };
   const currentDatetime = new Date();
   const expiryToDatetime = new Date(expiry_timestamp);
   if(!name) {
@@ -19,6 +19,9 @@ portalRouter.route('/').post(express.json(), (req, res, next) => {
     return res.status(400).json({error: 'expiry_timestamp is invalid'});
   }
 
+  if(use_password && password.length === 0) {
+    return res.status(400).json({error: 'Invalid password'});
+  }
   PortalService.addPortal(db, newPortal)
     .then(portal => {
       return res
@@ -33,6 +36,7 @@ portalRouter
   .route('/:id')
   .all((req, res, next) => {
     const db = req.app.get('db');
+    const password = req.headers.password || '';
     if (!validator.isUUID(req.params.id)) {
       return res.status(404).json({ error: 'Invalid id' });
     }
@@ -41,6 +45,10 @@ portalRouter
       .then(portal => {
         if (!portal) {
           return res.status(400).json({ error: 'Invalid portal id!' });
+        }
+
+        if(portal.use_password && portal.password !== password) {
+          return res.status(400).json({error: 'Invalid portal id'});
         }
         res.portal = portal;
         next();
