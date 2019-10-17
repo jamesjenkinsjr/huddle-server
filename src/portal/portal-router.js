@@ -61,6 +61,7 @@ portalRouter
             }
             return res.status(200).json({portalAuth: PortalService.createJWT(portal.name, {id: portal.id})});
           })
+          .catch(next)
       })
   })
 
@@ -82,13 +83,19 @@ portalRouter
         if (!portal) {
           return res.status(400).json({ error: 'Invalid portal id!' });
         }
-        
-        if(portal.use_password && password !== portal.password) {
-          return res.status(401).json({error: 'Unauthorized portal request'});
+        console.log('password?', portal.use_password)
+        if(portal.use_password) {
+          PortalService.comparePasswordWithToken(password, portal.password)
+            .then(valid => {
+              console.log('is password valid?', valid)
+              if(!valid) {
+                return res.status(401).json({error: 'Unauthorized portal request'});
+              }
+            })
         }
-
         res.portal = publicPortal;
-        next();
+        next()
+        console.log(res.portal)
       })
       .catch(next);
   })
