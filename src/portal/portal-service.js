@@ -29,12 +29,10 @@ const PortalService = {
       .where({id});
   },
   createJWT: (subject, payload) => {
-    const token = jwt.sign(payload, config.JWT_SECRET, {
+    return jwt.sign(payload, config.JWT_SECRET, {
       subject,
       algorithm: 'HS256'
     });
-    console.log(token);
-    return(token);
   },
   verifyJWT: (token) => {
     return jwt.verify(token, config.JWT_SECRET, {
