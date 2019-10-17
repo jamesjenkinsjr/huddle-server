@@ -3,7 +3,7 @@ const PortalService = require('./portal-service');
 const portalRouter = express.Router();
 const path = require('path');
 const bcryptjs = require('bcryptjs');
-const checkPortalGated = require('../middleware/jwt-auth');
+const checkProtectedPortal = require('../middleware/jwt-auth');
 
 const validator = require('validator');
 
@@ -42,9 +42,9 @@ portalRouter.route('/').post(express.json(), (req, res, next) => {
     .catch(next);
 });
 
-portalRouter.route('/:id/auth').post(express.json(), (req, res, next) => {
+portalRouter.route('/:portal_id/auth').post(express.json(), (req, res, next) => {
   const db = req.app.get('db');
-  const id = req.params.id;
+  const id = req.params.portal_id;
   const { password } = req.body;
 
   if (!password) {
@@ -58,6 +58,7 @@ portalRouter.route('/:id/auth').post(express.json(), (req, res, next) => {
       if (!portal) {
         return res.status(400).json({ error: 'Invalid portal id' });
       }
+      
       return PortalService.comparePasswordWithToken(password, portal.password)
         .then(valid => {
           if (!valid) {
@@ -76,16 +77,15 @@ portalRouter.route('/:id/auth').post(express.json(), (req, res, next) => {
 });
 
 portalRouter
-  .route('/:id')
+  .route('/:portal_id')
   .all((req, res, next) => {
     const db = req.app.get('db');
-    //const password = req.headers.password || ''
 
-    if (!validator.isUUID(req.params.id)) {
+    if (!validator.isUUID(req.params.portal_id)) {
       return res.status(404).json({ error: 'Invalid id' });
     }
 
-    PortalService.getPortalByID(db, req.params.id)
+    PortalService.getPortalByID(db, req.params.portal_id)
       .then(portal => {
         if (!portal) {
           return res.status(400).json({ error: 'Invalid portal id!' });
@@ -94,7 +94,7 @@ portalRouter
       })
       .catch(next);
   })
-  .all(checkPortalGated)
+  .all(checkProtectedPortal)
   .get((req, res, next) => {
     const db = req.app.get('db');
     const currentDatetime = new Date();
@@ -109,22 +109,24 @@ portalRouter
     return res.json(res.portal);
   });
 
-portalRouter.route('/:id/messages').get((req, res, next) => {
-  // todo: need to gate this request with password/token
-  const db = req.app.get('db');
+portalRouter.route('/:portal_id/messages')
+  .all(checkProtectedPortal)
+  .get((req, res, next) => {
+  
+    const db = req.app.get('db');
 
-  if (!validator.isUUID(req.params.id)) {
-    return res.status(404).json({ error: 'Invalid id' });
-  }
+    if (!validator.isUUID(req.params.portal_id)) {
+      return res.status(404).json({ error: 'Invalid id' });
+    }
 
-  PortalService.getMessagesForPortal(db, req.params.id)
-    .then(messages => {
-      if (!messages) {
-        return res.status(404).json({ error: 'No messages were found' });
-      }
-      return res.status(200).json(messages);
-    })
-    .catch(next);
-});
+    PortalService.getMessagesForPortal(db, req.params.portal_id)
+      .then(messages => {
+        if (!messages) {
+          return res.status(404).json({ error: 'No messages were found' });
+        }
+        return res.status(200).json(messages);
+      })
+      .catch(next);
+  });
 
 module.exports = portalRouter;

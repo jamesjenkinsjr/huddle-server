@@ -2,7 +2,8 @@ const MessageService = {
   getMessageByID: (db, id) => {
     return db('message')
       .select('*')
-      .where({id});
+      .where({id})
+      .first();
   },
   addMessage: (db, data) => {
     return db('message')

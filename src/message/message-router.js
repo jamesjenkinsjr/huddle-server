@@ -1,12 +1,15 @@
 const express = require('express');
 const path = require('path');
 const MessageService = require('./message-service');
+const checkProtectedPortal = require('../middleware/jwt-auth');
 
 const messageRouter = express.Router();
 
 messageRouter
   .route('/')
-  .post(express.json(), (req, res, next) => {
+  .all(express.json())
+  .all(checkProtectedPortal)
+  .post((req, res, next) => {
     const db = req.app.get('db');
     const { content, author, portal_id } = req.body;
 
@@ -31,10 +34,10 @@ messageRouter
       .catch(next);
   });
 messageRouter
-  .route('/:id')
+  .route('/:message_id')
   .all((req, res, next) => {
     const db = req.app.get('db');
-    const id = req.params.id;
+    const id = req.params.message_id;
 
     MessageService.getMessageByID(db, id)
       .then(message => {
@@ -46,6 +49,7 @@ messageRouter
       })
       .catch(next);
   })
+  .all(checkProtectedPortal)
   .get((req, res, next) => {
     return res.status(200).json(res.message);
   });
