@@ -1,6 +1,6 @@
 ALTER TABLE portal
-  ADD COLUMN create_timestamp TIMESTAMP DEFAULT NOW() NOT NULL,
-  ADD COLUMN expiry_timestamp TIMESTAMP;
+  ADD COLUMN create_timestamp TIMESTAMPTZ DEFAULT NOW() NOT NULL,
+  ADD COLUMN expiry_timestamp TIMESTAMPTZ;
 
 CREATE FUNCTION expire_portal() RETURNS TRIGGER
   LANGUAGE plpgsql

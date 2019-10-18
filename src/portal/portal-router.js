@@ -4,8 +4,24 @@ const portalRouter = express.Router();
 const path = require('path');
 const bcryptjs = require('bcryptjs');
 const checkProtectedPortal = require('../middleware/jwt-auth');
+const xss = require('xss');
 
 const validator = require('validator');
+
+const sanitizePortal = portal => {
+  return {
+    ...portal,
+    name: xss(portal.name)
+  }
+}
+
+const sanitizeMessage = message => {
+  return {
+    ...message,
+    content: xss(message.content),
+    author: xss(message.author)
+  };
+}
 
 portalRouter.route('/').post(express.json(), (req, res, next) => {
   const db = req.app.get('db');
@@ -16,6 +32,7 @@ portalRouter.route('/').post(express.json(), (req, res, next) => {
     password = null,
   } = req.body;
   const newPortal = { name, expiry_timestamp, use_password, password };
+  sanitizePortal(newPortal)
   const currentDatetime = new Date();
   const expiryToDatetime = new Date(expiry_timestamp);
   if (!name) {
@@ -37,7 +54,7 @@ portalRouter.route('/').post(express.json(), (req, res, next) => {
       return res
         .status(201)
         .location(path.posix.join(req.originalUrl, `/${portal.id}`))
-        .json(portal);
+        .json(sanitizePortal(portal));
     })
     .catch(next);
 });
@@ -58,8 +75,8 @@ portalRouter.route('/:portal_id/auth').post(express.json(), (req, res, next) => 
       if (!portal) {
         return res.status(400).json({ error: 'Invalid portal id' });
       }
-      
-      return PortalService.comparePasswordWithToken(password, portal.password)
+      const cleanPortal = sanitizePortal(portal)
+      return PortalService.comparePasswordWithToken(password, cleanPortal.password)
         .then(valid => {
           if (!valid) {
             return res.status(400).json({ error: 'Invalid password' });
@@ -67,7 +84,7 @@ portalRouter.route('/:portal_id/auth').post(express.json(), (req, res, next) => 
           return res
             .status(200)
             .json({
-              portalAuth: PortalService.createJWT(portal.name, {
+              portalAuth: PortalService.createJWT(cleanPortal.name, {
                 id: portal.id,
               }),
             });
@@ -106,7 +123,7 @@ portalRouter
         .catch(next);
     }
 
-    return res.json(res.portal);
+    return res.json(sanitizePortal(res.portal));
   });
 
 portalRouter.route('/:portal_id/messages')
@@ -124,7 +141,7 @@ portalRouter.route('/:portal_id/messages')
         if (!messages) {
           return res.status(404).json({ error: 'No messages were found' });
         }
-        return res.status(200).json(messages);
+        return res.status(200).json(messages.map(message => sanitizeMessage(message)));
       })
       .catch(next);
   });
