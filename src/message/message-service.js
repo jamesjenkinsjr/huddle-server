@@ -2,8 +2,8 @@ const MessageService = {
   getMessageByID: (db, id) => {
     return db('message')
       .select('*')
-      .where({id})
-      .first();
+      .where({ id })
+      .first()
   },
   addMessage: (db, data) => {
     return db('message')
@@ -11,10 +11,9 @@ const MessageService = {
       .returning('*')
       .then(messages => messages[0])
       .then(message => {
-        return MessageService.getMessageByID(db, message.id);
-      });
+        return MessageService.getMessageByID(db, message.id)
+      })
   },
+}
 
-};
-
-module.exports = MessageService;
+module.exports = MessageService
