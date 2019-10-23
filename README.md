@@ -1,30 +1,49 @@
-# Express Boilerplate!
+# Huddle API
 
-This is a boilerplate project used for starting new express servers.
+To access the live API endpoint, use the following URL: https://huddle-app-server.herokuapp.com/api
 
-## Set up
+## Getting Started 
+- Clone the repository and run `npm i`
+- Create local Postgresql databases (NOTE: you will need Postgresql installed locally): `huddle` and `huddle-test` 
+- Run `mv example.env .env` and provide the local database locations within your `.env` file
+- Run `npm run migrate` and `npm run migrate:test` to update each database with appropriate tables
+  - To seed, use terminal to enter root of application and run (NOTE: add username/password if you elected to apply these to your configuration): `psql -d huddle -f ./seeds/seed.huddle_tables.sql` 
+- Run `npm run dev` to start server locally
 
-Complete the following steps to start a new project (NEW-PROJECT-NAME):
+## Description
 
-1. Clone this repository to your local machine `git clone BOILERPLATE-REPO-URL NEW-PROJECT-NAME`
-2. `cd` into the cloned repository
-3. Make a fresh start of the git history for this project with `rm -rf .git && git init`
-4. Install the node dependencies `npm i`
-5. Move the example Environment file to `.env` that will be ignored by git and read by the express server `mv example.env .env`
-6. Edit the contents of the `package.json` to use `"name": "NEW-PROJECT-NAME"` instead of `"name": "express-boilerplate",`
+\* = Portals with a password will require valid JWT token.
 
-### Abridged version: 
-1. Pick a project name, `PROJECT-NAME-HERE`
-2. `projectname=PROJECT-NAME-HERE && git clone git@github.com:jamesjenkinsjr/express-boilerplate.git $projectname && cd $_ && rm -rf .git && git init && npm i && mv example.env .env && vim package.json && git add -A && git commit -m "initial server commit"` (NOTE: You will be prompted to use vim to edit package.json project name)
+Huddle API is the Express/NodeJS server responsible for handling API requests for Huddle (https://github.com/jamesjenkinsjr/huddle).  While running, users can make the following API requests: 
 
-## Scripts
+### Portal
 
-Start the application `npm start`
+- `POST /`: Create a portal within Huddle. Possible field options include:
+  - name (required): friendly name of portal
+  - expiry_timestamp (required): datetime field in the future that determines portal expiry
+  - use_password: boolean field defaulted to false that determines if a password is to be used 
+  - password: required if use_password is true, and is a string that will be encoded and stored for gating access to portal and related portal data
 
-Start nodemon for the application `npm run dev`
+- `POST /:portal_id/auth`: Endpoint used to validate the password of a gated portal. Upon success, returns a JWT token to authorize additional requests to API for a gated portal.
+Possible field options include:
+  - password (required): string value associated with portal_id param
 
-Run the tests (mocha/chai) `npm test`
+- `GET /:portal_id` *: Provides public information for portal given valid id.
 
-## Deploying
+- `GET /:portal_id/messages` *: Returns array of messages associated with provided portal.
 
-When your new project is ready for deployment, add a new Heroku application with `heroku create`. This will make a new git remote called "heroku" and you can then `npm run deploy` which will push to this remote's master branch.
+### Message
+
+- `POST /` *: Post JSON message object. Fields include: 
+  - author (required): string representing the creator of the message
+  - content (required): string representing the contents of the message body
+  - portal_id (required): UUID representing the portal to which the message is associated
+  - create_timestamp: datetime defaulting to present date and time
+
+- `GET /message_id` *: Get data associated with a specific message
+
+## Technologies
+
+- NodeJS
+- Express
+- Postgresql
