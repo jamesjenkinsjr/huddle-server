@@ -58,11 +58,12 @@ describe('Portal Endpoints', () => {
 
     context('Portal is not gated with password', () => {
       const cleanPortal = { ...testPortals[0] }
-      const messages = testMessages.filter(message => message.portal_id === testPortals[0].id)
+      const messages = testMessages.filter(
+        message => message.portal_id === testPortals[0].id
+      )
       delete cleanPortal.password
 
-      it('GET /:portal_id returns expected response', () => {    
-
+      it('GET /:portal_id returns expected response', () => {
         return supertest(app)
           .get('/api/portal/a7580f03-d358-4f3f-a5f8-6b69ba02d83a')
           .expect(200)
@@ -73,16 +74,18 @@ describe('Portal Endpoints', () => {
 
       it('GET /:portal_id/messages returns expected response', () => {
         return supertest(app)
-        .get('/api/portal/a7580f03-d358-4f3f-a5f8-6b69ba02d83a/messages')
-        .expect(200)
-        .expect(res => {
-          expect(testHelpers.removeMessageIDs(res.body)).to.eql(messages)
-        })
+          .get('/api/portal/a7580f03-d358-4f3f-a5f8-6b69ba02d83a/messages')
+          .expect(200)
+          .expect(res => {
+            expect(testHelpers.removeMessageIDs(res.body)).to.eql(messages)
+          })
       })
     })
     context('Portal is gated and is authorized', () => {
       const cleanPortal = { ...testPortals[1] }
-      const messages = testMessages.filter(message => message.portal_id === testPortals[1].id)
+      const messages = testMessages.filter(
+        message => message.portal_id === testPortals[1].id
+      )
       delete cleanPortal.password
 
       it('GET /:portal_id returns expected response', () => {
@@ -100,15 +103,15 @@ describe('Portal Endpoints', () => {
 
       it('GET /:portal_id/messages returns expected response', () => {
         return supertest(app)
-        .get('/api/portal/7f3d81aa-d8df-43d5-bfb1-453ba9a04093/messages')
-        .set(
-          'Authorization',
-          'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjdmM2Q4MWFhLWQ4ZGYtNDNkNS1iZmIxLTQ1M2JhOWEwNDA5MyIsImlhdCI6MTU3MTg1NTc4OSwic3ViIjoicG9ydGFsIDIifQ.7HEJRS8CvDB2YpAQ8KpETQoOubnbxFIMLTOBEsMaVvI'
-        )
-        .expect(200)
-        .expect(res => {
-          expect(testHelpers.removeMessageIDs(res.body)).to.eql(messages)
-        })
+          .get('/api/portal/7f3d81aa-d8df-43d5-bfb1-453ba9a04093/messages')
+          .set(
+            'Authorization',
+            'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjdmM2Q4MWFhLWQ4ZGYtNDNkNS1iZmIxLTQ1M2JhOWEwNDA5MyIsImlhdCI6MTU3MTg1NTc4OSwic3ViIjoicG9ydGFsIDIifQ.7HEJRS8CvDB2YpAQ8KpETQoOubnbxFIMLTOBEsMaVvI'
+          )
+          .expect(200)
+          .expect(res => {
+            expect(testHelpers.removeMessageIDs(res.body)).to.eql(messages)
+          })
       })
     })
   })

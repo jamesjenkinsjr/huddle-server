@@ -3,12 +3,12 @@ const app = require('../src/app')
 const testHelpers = require('./test-helpers')
 
 describe('Message endpoints', () => {
-  let db 
+  let db
 
   before('create db', () => {
     db = knex({
       client: 'pg',
-      connection: process.env.TEST_DATABASE_URL
+      connection: process.env.TEST_DATABASE_URL,
     })
 
     app.set('db', db)
@@ -25,7 +25,7 @@ describe('Message endpoints', () => {
         const newMessage = {
           author: 'tester',
           content: 'This is some new content',
-          portal_id: 'a7580f03-d358-4f3f-a5f8-6b69ba02d83a'
+          portal_id: 'a7580f03-d358-4f3f-a5f8-6b69ba02d83a',
         }
 
         return supertest(app)
@@ -44,8 +44,8 @@ describe('Message endpoints', () => {
         return supertest(app)
           .get('/api/message/1')
           .expect(200)
-          .expect( res => {
-            expect(res.body).to.eql({ ...testMessage, id: 1})
+          .expect(res => {
+            expect(res.body).to.eql({ ...testMessage, id: 1 })
           })
       })
     })
@@ -56,9 +56,9 @@ describe('Message endpoints', () => {
           const newMessage = {
             author: 'tester',
             content: 'This is some new content',
-            portal_id: '7f3d81aa-d8df-43d5-bfb1-453ba9a04093'
+            portal_id: '7f3d81aa-d8df-43d5-bfb1-453ba9a04093',
           }
-  
+
           return supertest(app)
             .post('/api/message')
             .set(
@@ -72,10 +72,10 @@ describe('Message endpoints', () => {
               expect(res.body).to.include({ ...newMessage, id: 5 })
             })
         })
-  
+
         it('GET /:message_id returns expected response and data', () => {
           const testMessage = testHelpers.messagesArray[2]
-  
+
           return supertest(app)
             .get('/api/message/3')
             .set(
@@ -83,8 +83,8 @@ describe('Message endpoints', () => {
               'Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjdmM2Q4MWFhLWQ4ZGYtNDNkNS1iZmIxLTQ1M2JhOWEwNDA5MyIsImlhdCI6MTU3MTg1NTc4OSwic3ViIjoicG9ydGFsIDIifQ.7HEJRS8CvDB2YpAQ8KpETQoOubnbxFIMLTOBEsMaVvI'
             )
             .expect(200)
-            .expect( res => {
-              expect(res.body).to.eql({ ...testMessage, id: 3})
+            .expect(res => {
+              expect(res.body).to.eql({ ...testMessage, id: 3 })
             })
         })
       })
