@@ -45,9 +45,9 @@ portalRouter.route('/').post(express.json(), (req, res, next) => {
 
   if (use_password && password.length === 0) {
     return res.status(400).json({ error: 'Invalid password' })
+  } else if (use_password) {
+    newPortal.password = bcryptjs.hashSync(password, 6)
   }
-
-  newPortal.password = bcryptjs.hashSync(password, 6)
 
   PortalService.addPortal(db, newPortal)
     .then(portal => {
