@@ -1,3 +1,4 @@
+const validator = require('validator')
 const PortalService = require('../portal/portal-service')
 
 function checkProtectedPortal(req, res, next) {
@@ -19,10 +20,16 @@ function checkProtectedPortal(req, res, next) {
   const token = req.get('Authorization') || ''
   const bearerToken = token.slice(7)
 
+  if (!id || !validator.isUUID(id)) {
+    return res.status(400).json({ error: 'Invalid Portal ID' })
+  }
+
   PortalService.getPortalByID(db, id).then(portal => {
     const publicPortal = { ...portal }
     delete publicPortal.password
-
+    if (!portal) {
+      return res.status(400).json({ error: 'Invalid Portal ID' })
+    }
     if (portal.use_password) {
       try {
         const payload = PortalService.verifyJWT(bearerToken)

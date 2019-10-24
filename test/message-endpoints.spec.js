@@ -38,6 +38,46 @@ describe('Message endpoints', () => {
           })
       })
 
+      it('POST / fails when no portal_id provided', () => {
+        const badMessage = {}
+
+        return supertest(app)
+          .post('/api/message')
+          .send(badMessage)
+          .expect(400, { error: 'Invalid Portal ID' })
+      })
+
+      it('POST / fails when no author provided', () => {
+        const badMessage = {
+          portal_id: 'a7580f03-d358-4f3f-a5f8-6b69ba02d83a',
+          content: 'some content',
+        }
+
+        return supertest(app)
+          .post('/api/message')
+          .send(badMessage)
+          .expect(400, { error: 'content, author, and portal_id are required' })
+      })
+      it('POST / fails when no content provided', () => {
+        const badMessage = {
+          author: 'Test',
+          portal_id: 'a7580f03-d358-4f3f-a5f8-6b69ba02d83a',
+        }
+
+        return supertest(app)
+          .post('/api/message')
+          .send(badMessage)
+          .expect(400, { error: 'content, author, and portal_id are required' })
+      })
+      it('POST / fails when invalid portal_id provided', () => {
+        const badMessage = { portal_id: 'a7580f03-d358-4f3f-a5f8-6b69ba02d83' }
+
+        return supertest(app)
+          .post('/api/message')
+          .send(badMessage)
+          .expect(400, { error: 'Invalid Portal ID' })
+      })
+
       it('GET /:message_id returns expected response and data', () => {
         const testMessage = testHelpers.messagesArray[0]
 
@@ -47,6 +87,12 @@ describe('Message endpoints', () => {
           .expect(res => {
             expect(res.body).to.eql({ ...testMessage, id: 1 })
           })
+      })
+
+      it('GET /:message_id returns 400 and expected error when invalid', () => {
+        return supertest(app)
+          .get('/api/message/12')
+          .expect(400, { error: 'invalid id' })
       })
     })
 
@@ -73,6 +119,20 @@ describe('Message endpoints', () => {
             })
         })
 
+        it('POST / returns 400 and expected error when not authorized', () => {
+          const newMessage = {
+            author: 'tester',
+            content: 'This is some new content',
+            portal_id: '7f3d81aa-d8df-43d5-bfb1-453ba9a04093',
+          }
+
+          return supertest(app)
+            .post('/api/message')
+            .set('Authorization', 'Bearer foo-not-good')
+            .send(newMessage)
+            .expect(401, { error: 'Unauthorized portal request' })
+        })
+
         it('GET /:message_id returns expected response and data', () => {
           const testMessage = testHelpers.messagesArray[2]
 
@@ -86,6 +146,15 @@ describe('Message endpoints', () => {
             .expect(res => {
               expect(res.body).to.eql({ ...testMessage, id: 3 })
             })
+        })
+
+        it('GET /:message_id returns 401 and expected error when not authorized', () => {
+          const testMessage = testHelpers.messagesArray[2]
+
+          return supertest(app)
+            .get('/api/message/3')
+            .set('Authorization', 'Bearer bad-token')
+            .expect(401, { error: 'Unauthorized portal request' })
         })
       })
     })

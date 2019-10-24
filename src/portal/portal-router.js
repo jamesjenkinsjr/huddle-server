@@ -5,7 +5,6 @@ const path = require('path')
 const bcryptjs = require('bcryptjs')
 const checkProtectedPortal = require('../middleware/jwt-auth')
 const xss = require('xss')
-
 const validator = require('validator')
 
 const sanitizePortal = portal => {
@@ -39,11 +38,15 @@ portalRouter.route('/').post(express.json(), (req, res, next) => {
     return res.status(400).json({ error: 'Portal name is required' })
   }
 
+  if (!expiry_timestamp) {
+    return res.status(400).json({ error: 'Expiry is required' })
+  }
+
   if (expiry_timestamp !== null && expiryToDatetime <= currentDatetime) {
     return res.status(400).json({ error: 'expiry_timestamp is invalid' })
   }
 
-  if (use_password && password.length === 0) {
+  if (use_password && (!password || password.length === 0)) {
     return res.status(400).json({ error: 'Invalid password' })
   } else if (use_password) {
     newPortal.password = bcryptjs.hashSync(password, 6)
@@ -68,6 +71,10 @@ portalRouter
 
     if (!password) {
       return res.status(400).json({ error: 'Password is required' })
+    }
+
+    if (!validator.isUUID(id)) {
+      return res.status(400).json({ error: 'Invalid Portal ID' })
     }
     db('portal')
       .select('*')
@@ -102,13 +109,13 @@ portalRouter
     const db = req.app.get('db')
 
     if (!validator.isUUID(req.params.portal_id)) {
-      return res.status(404).json({ error: 'Invalid id' })
+      return res.status(400).json({ error: 'Invalid Portal ID' })
     }
 
     PortalService.getPortalByID(db, req.params.portal_id)
       .then(portal => {
         if (!portal) {
-          return res.status(400).json({ error: 'Invalid portal id!' })
+          return res.status(400).json({ error: 'Invalid Portal ID' })
         }
         next()
       })
